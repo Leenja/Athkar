@@ -17,4 +17,9 @@ class Category extends Model
         'ends_at',
         'order'
     ];
+
+    public function dhikrs()
+    {
+        return $this->hasMany(Dhikr::class);
+    }
 }

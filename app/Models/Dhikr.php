@@ -20,4 +20,9 @@ class Dhikr extends Model
         'reviewed_at',
         'order',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 }

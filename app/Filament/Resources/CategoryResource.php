@@ -6,7 +6,6 @@ use App\Filament\Resources\CategoryResource\Pages;
 use App\Filament\Resources\CategoryResource\RelationManagers;
 use App\Models\Category;
 use Filament\Forms;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -47,26 +46,11 @@ class CategoryResource extends Resource
                 Forms\Components\TextInput::make('name_en')
                     ->label(__('categories.name_en'))
                     ->maxLength(255),
-                Select::make('slug')
+                Forms\Components\TextInput::make('slug')
                     ->label(__('categories.slug'))
-                    ->options([
-                        'morning' => 'Morning Adhkar',
-                        'evening' => 'Evening Adhkar',
-                        'sleeping' => 'Sleeping Adhkar',
-                        'waking_up' => 'Waking Up Adhkar',
-                        'before_prayer' => 'Before Prayer Adhkar',
-                        'after_prayer' => 'After Prayer Adhkar',
-                        'daily_routine' => 'Daily Routine Adhkar',
-                        'travel' => 'Travel Adhkar',
-                        'occasional' => 'Occasional Adhkar',
-                        'social' => 'Social Interactions & Environment Adhkar',
-                        'fear_anxiety' => 'Fear, Anxiety & Distress Adhkar',
-                        'weather' => 'Weather & Natural Phenomena Adhkar',
-                        'illness' => 'Illness, Patience & Visiting the Sick Adhkar',
-                    ])
                     ->required()
-                    ->unique(ignoreRecord: true)
-                    ->searchable(),
+                    ->maxLength(255)
+                    ->unique(ignoreRecord: true),
                 TimePicker::make('starts_at')
                     ->label(__('categories.starts_at'))
                     ->seconds(false)

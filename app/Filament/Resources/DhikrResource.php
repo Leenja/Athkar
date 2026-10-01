@@ -104,8 +104,8 @@ class DhikrResource extends Resource
                     ->wrap(),
                 Tables\Columns\TextColumn::make('repeat_count')
                     ->label(__('dhikrs.repeat_count'))
-                    ->numeric()
-                    ->sortable(),
+                    ->numeric(),
+                    //->sortable(),
                 Tables\Columns\IconColumn::make('audio_url')
                     ->label(__('dhikrs.has_audio'))
                     ->boolean()

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\FavoriteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Category;
@@ -28,6 +29,11 @@ Route::prefix('v1')->group(function() {
     Route::middleware('auth:sanctum')->group(function() {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/profile', [AuthController::class, 'profile']);
+
+        //--------------------------------------------------------------------------
+        Route::get('/favorites', [FavoriteController::class, 'index']);
+        Route::post('/favorites/{dhikr}', [FavoriteController::class, 'store']);
+        Route::delete('/favorites/{dhikr}', [FavoriteController::class, 'destroy']);
     });
 
     // Google OAuth

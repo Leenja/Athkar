@@ -29,6 +29,11 @@ Route::prefix('v1')->group(function() {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/profile', [AuthController::class, 'profile']);
     });
+
+    // Google OAuth
+    Route::get('/auth/google/redirect', [AuthController::class, 'redirectToGoogle']);
+    Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+    Route::post('/auth/google/token', [AuthController::class, 'loginWithGoogleToken']);
 });
 
 

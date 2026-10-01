@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -75,5 +77,76 @@ class AuthController extends Controller
     public function profile(Request $request)
     {
         return response()->json($request->user());
+    }
+
+    //-------------------------------------------------------------
+
+    //For the website
+    public function redirectToGoogle()
+    {
+        /** @disregard P1013 */
+        return Socialite::driver('google')
+            ->stateless()
+            ->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        /** @disregard P1013 */
+        $googleUser = Socialite::driver('google')->stateless()->user();
+
+        $user = $this->findOrCreateGoogleUser($googleUser);
+
+        $token = $user->createToken('web')->plainTextToken;
+
+        // During development, we return it as JSON to easily test it from the browser.
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    //For the mobile application
+    public function loginWithGoogleToken(Request $request)
+    {
+        $request->validate([
+            'access_token' => 'required|string',
+        ]);
+
+        try {
+            /** @disregard P1013 */
+            $googleUser = Socialite::driver('google')
+                ->stateless()
+                ->userFromToken($request->access_token);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Invalid Google code',
+            ], 401);
+        }
+
+        $user = $this->findOrCreateGoogleUser($googleUser);
+
+        $token = $user->createToken('mobile')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    //For both
+    private function findOrCreateGoogleUser($googleUser)
+    {
+        $user = User::where('email', $googleUser->getEmail())->first();
+
+        if (! $user) {
+            $user = User::create([
+                'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Google User',
+                'email' => $googleUser->getEmail(),
+                'password' => Hash::make(Str::random(32)), // Random password, will never be used
+            ]);
+        }
+
+        return $user;
     }
 }

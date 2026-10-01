@@ -30,6 +30,7 @@ Route::prefix('v1')->group(function() {
     Route::middleware('auth:sanctum')->group(function() {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/profile', [AuthController::class, 'profile']);
+        Route::delete('/account', [AuthController::class, 'deleteAccount']);
 
         //--------------------------------------------------------------------------
         Route::get('/favorites', [FavoriteController::class, 'index']);

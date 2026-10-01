@@ -79,6 +79,20 @@ class AuthController extends Controller
         return response()->json($request->user());
     }
 
+    public function deleteAccount(Request $request)
+    {
+        $user = $request->user();
+
+        // Delete all tokens (logout from all devices that ha the same token)
+        $user->tokens()->delete();
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'Account Has Been Deleted Successfully',
+        ]);
+    }
+
     //-------------------------------------------------------------
 
     //For the website

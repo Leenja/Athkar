@@ -129,6 +129,7 @@ class DhikrResource extends Resource
             ])
             ->defaultSort('order')
             ->reorderable('order')
+            ->paginated(false)
             ->filters([
                 Tables\Filters\SelectFilter::make('category_id')
                     ->label(__('dhikrs.category'))

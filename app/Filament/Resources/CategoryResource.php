@@ -94,6 +94,7 @@ class CategoryResource extends Resource
             ])
             ->defaultSort('order')
             ->reorderable('order')
+            ->paginated(false)
             ->filters([
                 //
             ])

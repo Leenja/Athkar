@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\ProgressController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Category;
@@ -34,6 +35,10 @@ Route::prefix('v1')->group(function() {
         Route::get('/favorites', [FavoriteController::class, 'index']);
         Route::post('/favorites/{dhikr}', [FavoriteController::class, 'store']);
         Route::delete('/favorites/{dhikr}', [FavoriteController::class, 'destroy']);
+
+        //--------------------------------------------------------------------------
+        Route::put('/dhikrs/{dhikr}/progress', [ProgressController::class, 'update']);
+        Route::get('/progress/today', [ProgressController::class, 'today']);
     });
 
     // Google OAuth

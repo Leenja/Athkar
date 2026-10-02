@@ -30,6 +30,8 @@ Route::prefix('v1')->group(function() {
     Route::middleware('auth:sanctum')->group(function() {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/profile', [AuthController::class, 'profile']);
+        Route::put('/profile',[AuthController::class, 'updateProfile']);
+        Route::put('/profile/password', [AuthController::class, 'changePassword']);
         Route::delete('/account', [AuthController::class, 'deleteAccount']);
 
         //--------------------------------------------------------------------------

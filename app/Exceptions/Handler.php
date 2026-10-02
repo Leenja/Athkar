@@ -32,5 +32,13 @@ class Handler extends ExceptionHandler
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
         });
+
+        $this->renderable(function (\Illuminate\Validation\ValidationException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+        });
     }
 }

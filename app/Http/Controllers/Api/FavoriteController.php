@@ -22,8 +22,16 @@ class FavoriteController extends Controller
 
     public function destroy(Request $request, Dhikr $dhikr)
     {
+        $exists = $request->user()->favorites()->where('dhikr_id', $dhikr->id)->exists();
+
+        if (! $exists) {
+            return response()->json([
+                'message' => 'Dhikr is not in favorites',
+            ], 404);
+        }
+
         $request->user()->favorites()->detach($dhikr->id);
 
-        return response()->json(['message' => 'Removed From Favorites']);
+        return response()->json(['message' => 'Removed from favorites']);
     }
 }

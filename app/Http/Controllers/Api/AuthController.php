@@ -16,7 +16,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email:rfc,dns|max:255|unique:users',
             'password' => 'required|string|min:8',
             'timezone' => 'nullable|string|max:100',
         ]);
@@ -85,7 +85,7 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'sometimes|string|email:rfc,dns|max:255|unique:users,email,' . $user->id,
             'timezone' => 'sometimes|nullable|string|max:100',
         ]);
 
@@ -111,6 +111,12 @@ class AuthController extends Controller
 
         if (! Hash::check($request->current_password, $user->password)) {
             return response()->json(['message' => 'Incorrect Password'], 422);
+        }
+
+        if (Hash::check($request->new_password, $user->password)) {
+            return response()->json([
+                'message' => 'New password must be different from the current password',
+            ], 422);
         }
 
         $user->update(['password' => Hash::make($request->new_password)]);

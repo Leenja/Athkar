@@ -56,5 +56,16 @@ class Handler extends ExceptionHandler
                 ], 404);
             }
         });
+
+        $this->renderable(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, $request) {
+            if ($request->is('api/*')) {
+                $retryAfter = $e->getHeaders()['Retry-After'] ?? 60;
+
+                return response()->json([
+                    'message' => "Too many login attempts, try again in {$retryAfter} seconds",
+                    'retry_after_seconds' => (int) $retryAfter,
+                ], 429);
+            }
+        });
     }
 }

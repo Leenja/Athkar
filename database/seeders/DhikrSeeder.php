@@ -65,5 +65,15 @@ class DhikrSeeder extends Seeder
                 );
             }
         }
+
+        $firstDhikr = Dhikr::orderBy('id')->first();
+
+        if ($firstDhikr) {
+            $firstDhikr->update([
+                'audio_url' => 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+            ]);
+
+            $this->command->info("Test audio added to dhikr #{$firstDhikr->id}");
+        }
     }
 }

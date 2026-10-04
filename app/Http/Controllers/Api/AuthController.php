@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\SendOtpMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
@@ -17,6 +19,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email:rfc,dns|max:255|unique:users',
+            'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8',
             'timezone' => 'nullable|string|max:100',
         ]);
@@ -25,19 +28,90 @@ class AuthController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        $otp = (string) random_int(100000,999999);
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'timezone' => $request->timezone,
+            'otp_code' => $otp,
+            'otp_expires_at' => now()->addMinutes(10),
+        ]);
+
+        Mail::to($user->email)->send(new SendOtpMail($otp));
+
+        return response()->json([
+            'message' => 'Please check your email for OTP...',
+            'email' => $user->email
+        ], 201);
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        if ($user->email_verified_at) {
+            return response()->json(['message' => 'Account is already activated'], 422);
+        }
+
+        if (! $user->otp_code || $user->otp_code !== $request->otp) {
+            return response()->json(['message' => 'OTP is not correct'], 422);
+        }
+
+        if (now()->greaterThan($user->otp_expires_at)) {
+            return response()->json(['message' => 'This session has expired, Please require a new OTP'], 422);
+        }
+
+        $user->update([
+            'email_verified_at' => now(),
+            'otp_code' => null,
+            'otp_expires_at' => null,
         ]);
 
         $token = $user->createToken('mobile')->plainTextToken;
 
         return response()->json([
+            'message' => 'Account has been successfully activated!',
             'user' => $user,
             'token' => $token,
         ], 201);
+    }
+
+    public function resendOtp(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        if ($user->email_verified_at) {
+            return response()->json(['message' => 'Account is already activated'], 422);
+        }
+
+        $otp = (string) random_int(100000, 999999);
+
+        $user->update([
+            'otp_code' => $otp,
+            'otp_expires_at' => now()->addMinutes(10)
+        ]);
+
+        Mail::to($user->email)->send(new SendOtpMail($otp));
+
+        return response()->json(['message' => 'New OTP has been sent']);
     }
 
     public function login(Request $request)
@@ -57,6 +131,13 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Invalid Credentials',
             ], 401);
+        }
+
+        if (! $user->email_verified_at) {
+            return response()->json([
+                'message' => 'Account is not activated, Please check your email',
+                'email' => $user->email
+            ], 403);
         }
 
         $token = $user->createToken('mobile')->plainTextToken;
@@ -86,6 +167,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email:rfc,dns|max:255|unique:users,email,' . $user->id,
+            'phone' => 'sometimes|nullable|string|max:20',
             'timezone' => 'sometimes|nullable|string|max:100',
         ]);
 

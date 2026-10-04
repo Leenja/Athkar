@@ -21,7 +21,12 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
+        'timezone',
+        'otp_code',
+        'otp_expires_at',
+        'email_verified_at'
     ];
 
     /**
@@ -32,6 +37,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'otp_code',
+        'otp_expires_at'
     ];
 
     /**

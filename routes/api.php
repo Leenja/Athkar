@@ -24,7 +24,9 @@ Route::prefix('v1')->group(function() {
     });
 
     //--------------------------------------------------------------------------
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:5,1');
+    Route::post('/resend-otp', [AuthController::class, 'resendOtp'])->middleware('throttle:5,1');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1'); //5 login attempts per minute
 
     Route::middleware('auth:sanctum')->group(function() {

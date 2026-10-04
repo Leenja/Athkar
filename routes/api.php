@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\DhikrController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\ProgressController;
 use Illuminate\Http\Request;
@@ -9,6 +11,8 @@ use App\Models\Category;
 use App\Models\Dhikr;
 
 Route::prefix('v1')->group(function() {
+
+    //Dashboard-----------------------------------------------------------------
     Route::get('/categories', function() {
         return Category::orderBy('order')->get();
     });
@@ -21,6 +25,19 @@ Route::prefix('v1')->group(function() {
         return Category::with(['dhikrs' => function ($query) {
             $query->orderBy('order');
         }])->orderBy('order')->get();
+    });
+
+    //Application
+
+    Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+        Route::get('/admin/dhikrs', [DhikrController::class, 'index']);
+        Route::get('/admin/dhikrs/{dhikr}', [DhikrController::class, 'show']);
+        Route::post('/dhikrs', [DhikrController::class, 'add']);
+        Route::put('/dhikrs/{dhikr}', [DhikrController::class, 'update']);
+        Route::delete('/dhikrs/{dhikr}', [DhikrController::class, 'destroy']);
+        Route::post('/categories', [CategoryController::class, 'store']);
+        Route::put('/categories/{category}', [CategoryController::class, 'update']);
+        Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
     });
 
     //--------------------------------------------------------------------------
@@ -53,7 +70,6 @@ Route::prefix('v1')->group(function() {
     Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
     Route::post('/auth/google/token', [AuthController::class, 'loginWithGoogleToken']);
 });
-
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

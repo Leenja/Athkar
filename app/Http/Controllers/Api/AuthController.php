@@ -66,7 +66,7 @@ class AuthController extends Controller
         }
 
         if (! $user->otp_code || $user->otp_code !== $request->otp) {
-            return response()->json(['message' => 'OTP is not correct'], 422);
+            return response()->json(['message' => 'Incorrect OTP'], 422);
         }
 
         if (now()->greaterThan($user->otp_expires_at)) {
@@ -204,6 +204,72 @@ class AuthController extends Controller
         $user->update(['password' => Hash::make($request->new_password)]);
 
         return response()->json(['message' => 'Password Has Changed Successfully']);
+    }
+
+    public function forgotPassword (Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user || ! $user->email_verified_at) {
+            return response()->json([
+                'message' => 'If we have your email registered, you should recieve reset password OTP',
+            ]);
+        }
+
+        $otp = (string) random_int(100000, 999999);
+
+        $user->update([
+            'otp_code' => $otp,
+            'otp_expires_at' => now()->addMinutes(10),
+        ]);
+
+        Mail::to($user->email)->send(new SendOtpMail($otp, 'reset'));
+
+        return response()->json([
+            'message' => 'If we have your email registered, you should recieve reset password OTP',
+        ]);
+    }
+
+    public function resetPassword (Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (! $user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        if (! $user->email_verified_at) {
+            return response()->json([
+                'message' => 'Please activate your account first before resetting your password',
+                'email' => $user->email,
+            ], 403);
+        }
+
+        if (! $user->otp_code || $user->otp_code !== $request->otp) {
+            return response()->json(['message' => 'Incorrect OTP'], 422);
+        }
+
+        if (now()->greaterThan($user->otp_expires_at)) {
+            return response()->json(['message' => 'This session has expired, Please require a new OTP'], 422);
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+            'otp_code' => null,
+            'otp_expires_at' => null,
+        ]);
+
+        $user->tokens()->delete();
+
+        return response()->json(['message' => 'Password has been reset successfully']);
     }
 
     public function deleteAccount(Request $request)

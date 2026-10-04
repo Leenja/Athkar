@@ -2,10 +2,13 @@
 <html dir="rtl">
 <head><meta charset="utf-8"></head>
 <body style="font-family: Arial, sans-serif; text-align: center; padding: 40px;">
-    <h2>Your OTP</h2>
+    <h2>{{ $purpose === 'reset' ? 'Your OTP' : 'Your reset password OTP' }}</h2>
     <p style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1e7145;">
         {{ $otp }}
     </p>
     <p>This OTP Is Valid For 10 Minutes</p>
+    @if ($purpose === 'reset')
+        <p style="color: #999; font-size: 13px;">If you didn't request reset password OTP ignore this message.</p>
+    @endif
 </body>
 </html>

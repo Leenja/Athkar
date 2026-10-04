@@ -62,7 +62,7 @@ class Handler extends ExceptionHandler
                 $retryAfter = $e->getHeaders()['Retry-After'] ?? 60;
 
                 return response()->json([
-                    'message' => "Too many login attempts, try again in {$retryAfter} seconds",
+                    'message' => "Too many attempts, try again in {$retryAfter} seconds",
                     'retry_after_seconds' => (int) $retryAfter,
                 ], 429);
             }

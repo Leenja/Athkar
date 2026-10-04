@@ -13,15 +13,19 @@ class SendOtpMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public string $otp)
+    public function __construct(public string $otp, public string $purpose = 'register')
     {
         //
     }
 
     public function envelope(): Envelope
     {
+        $subject = $this->purpose === 'reset'
+            ? 'Reset Password OTP - Athkar App'
+            : 'OTP - Athkar App';
+
         return new Envelope(
-            subject: 'OTP - Athkar App',
+            subject: $subject,
         );
     }
 
@@ -29,7 +33,10 @@ class SendOtpMail extends Mailable
     {
         return new Content(
             view: 'emails.otp',
-            with: ['otp' => $this->otp],
+            with: [
+                'otp' => $this->otp,
+                'purpose' => $this->purpose,
+            ],
         );
     }
 

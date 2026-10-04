@@ -28,6 +28,8 @@ Route::prefix('v1')->group(function() {
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:5,1');
     Route::post('/resend-otp', [AuthController::class, 'resendOtp'])->middleware('throttle:5,1');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1'); //5 login attempts per minute
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 
     Route::middleware('auth:sanctum')->group(function() {
         Route::post('/logout', [AuthController::class, 'logout']);
